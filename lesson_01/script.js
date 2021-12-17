@@ -24,3 +24,7 @@ const renderGoodsList = (list = goods) => {
 renderGoodsList();
 
 
+class ShowCase {
+
+}
+
