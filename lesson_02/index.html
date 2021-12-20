@@ -1,18 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>eShop</title>
+    <meta charset="utf-8">
+    <link href="styles.css" rel="stylesheet" type="text/css">
+    <title>eShop</title>
 </head>
 <body>
-  <header>
-    <button class="cart-button" type="button">Корзина</button>
-  </header>
-  <main>
-    
+<header>
+    <button id="cart-button" class="cart-button" type="button">Корзина</button>
+</header>
+<main>
+    <div id="cart-window" class="cart-window">
+        <span class="cart-close-btn">&times;</span>
+        <div class="cart-content">
+
+            <p>Some text in the Modal..</p>
+        </div>
+    </div>
+
     <div class="goods-list"></div>
 
-  </main>
-  
-  <script src="script.js"></script>
+</main>
+
+<script src="script.js"></script>
 </body>
 </html>
