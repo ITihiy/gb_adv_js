@@ -1,0 +1,25 @@
+.cart-button {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    border-radius: 6px;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 20px;
+}
+
+.goods-list {
+    display: flex;
+}
+
+.goods-item {
+    flex: 1;
+    border: 1px solid black;
+    border-radius: 6px;
+    margin-left: 20px;
+    padding: 10px;
+    background-color: lightyellow;
+}
