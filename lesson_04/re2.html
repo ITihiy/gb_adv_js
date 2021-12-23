@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Form with validation</title>
+    <style>
+        .invalid {
+            border: 1px solid red;
+        }
+
+        .valid {
+            border: 1px solid black;
+        }
+
+        .error {
+            font-size: 10px;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<form id="form">
+    <label for="user-name">User name</label>
+    <input id="user-name" name="user-name"><span class="error" id="user-name-error" hidden>Username invalid</span>
+
+    <br><br>
+
+    <label for="user-phone">User Phone</label>
+    <input id="user-phone" name="user-phone"><span class="error" id="user-phone-error" hidden>User phone invalid</span>
+
+    <br><br>
+
+    <label for="user-email">User Email</label>
+    <input id="user-email" name="user-email"><span class="error" id="user-email-error" hidden>User email invalid</span>
+
+    <br><br>
+
+    <label for="user-comments">User comments</label>
+    <textarea id="user-comments" rows="5" maxlength="140"></textarea>
+
+    <br>
+
+    <button type="submit">Submit</button>
+</form>
+</body>
+<script src="re2.js"></script>
+</html>
