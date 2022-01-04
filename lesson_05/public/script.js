@@ -1,4 +1,4 @@
-const API_URL = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/';
+const API_URL = 'http://localhost:8011/api/v1/';
 
 
 function getCounter() {
@@ -68,6 +68,17 @@ class Cart {
     constructor() {
         this.list = [];
         this.renderer = new CartRenderer();
+        this.renderer.setRemoveFromCartCartListener(this.remove.bind(this))
+    }
+
+    fetchGoods() {
+        fetch(`${API_URL}cart`)
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                data.map((item) => this.add(new Good(item)));
+            })
     }
 
     open() {
@@ -80,38 +91,36 @@ class Cart {
     }
 
     add(good) {
-        fetch(`${API_URL}addToBasket.json`)
-            .then(() => {
-                const idx = this.list.findIndex((stack) => stack.getGoodId() === good.id);
+        const idx = this.list.findIndex((stack) => stack.getGoodId() === good.id);
 
-                if (idx >= 0) {
-                    this.list[idx].add();
-                } else {
-                    this.list.push(new GoodStack(good));
-                }
-                this.renderer.render(this.list)
-            })
-            .catch((error) => {
-                console.log(error)
-            });
+        if (idx >= 0) {
+            this.list[idx].add();
+        } else {
+            this.list.push(new GoodStack(good));
+        }
+        this.renderer.render(this.list);
     }
 
     remove(id) {
-        fetch(`${API_URL}deleteFromBasket.json`)
-            .then(() => {
-                const idx = this.list.findIndex((stack) => stack.getGoodId() === id);
-                if (idx >= 0) {
-                    this.list[idx].remove();
-
-                    if (this.list[idx].getCount() <= 0) {
-                        this.list.splice(idx, 1)
-                    }
-                }
-                this.renderer.render(this.list);
+        const idx = this.list.findIndex((stack) => stack.id == id);
+        console.log(idx);
+        if (idx >= 0) {
+            fetch(`${API_URL}cart`, {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json;charset=utf-8'},
+                body: JSON.stringify(this.list[idx].getGood()),
             })
-            .catch((error) => {
-                console.log(error);
-            });
+                .then((response) => {
+                    if (response.status === 200) {
+                        this.list[idx].remove();
+
+                        if (this.list[idx].getCount() <= 0) {
+                            this.list.splice(idx, 1)
+                        }
+                    }
+                })
+        }
+        this.renderer.render(this.list);
     }
 }
 
@@ -120,12 +129,13 @@ class Showcase {
         this.list = [];
         this.cart = cart;
         this.renderer = new ShowCaseRenderer();
+        this.renderer.setAddToCartListener(this.addToCart.bind(this));
     }
 
     _onSuccess(response) {
         response.forEach(product => {
             this.list.push(
-                new Good({id: product.id_product, title: product.product_name, price: product.price})
+                new Good({id: product.id, title: product.title, price: product.price})
             )
         });
         this.renderer.render(this.list);
@@ -136,21 +146,31 @@ class Showcase {
     }
 
     fetchGoods() {
-        return fetch(`${API_URL}catalogData.json`)
+        return fetch(`${API_URL}showcase`)
             .then((response) => {
                 return response.json();
             })
             .then((response) => {
                 this._onSuccess(response);
                 return response;
+            }).catch((error) => {
+                this._onError(error);
             })
     }
 
     addToCart(id) {
-        const idx = this.list.findIndex((good) => id === good.id);
-
+        const idx = this.list.findIndex((good) => id == good.id);
         if (idx >= 0) {
-            this.cart.add(this.list[idx])
+            fetch(`${API_URL}cart`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json;charset=utf-8'},
+                body: JSON.stringify(this.list[idx]),
+            })
+                .then((response) => {
+                    if (response.status === 201) {
+                        this.cart.add(this.list[idx]);
+                    }
+                })
         }
     }
 }
@@ -161,24 +181,36 @@ class GoodRenderer {
     }
 
     render() {
-        return `<div class="goods-item"><h3>${this.good.getTitle()}</h3><p>${this.good.getPrice()}</p></div>`;
+        return `<div class="goods-item">
+                    <h3>${this.good.getTitle()}</h3>
+                    <p>${this.good.getPrice()}</p>
+                    <button data-id="${this.good.id}">Buy</button>
+                </div>`;
     }
 
 }
 
 class ShowCaseRenderer {
     constructor(list_class = ".goods-list") {
-        this.list_class = list_class;
+        this.goodList = document.querySelector(list_class);
+    }
+
+    setAddToCartListener(callback) {
+        this.goodList.addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {
+                const good_id = event.target.dataset.id;
+                callback(good_id);
+            }
+        })
     }
 
     render(items) {
-        const goodList = document.querySelector(this.list_class);
         let itemsList = items.map(
             (item) => {
                 return new GoodRenderer(item).render();
             }).join('');
 
-        goodList.insertAdjacentHTML('beforeend', itemsList);
+        this.goodList.insertAdjacentHTML('beforeend', itemsList);
     }
 }
 
@@ -188,6 +220,15 @@ class CartRenderer {
         this.cartCloseButton = this.cartContainer.querySelector('.cart-close-btn');
         this.listContainer = this.cartContainer.querySelector('.cart-content');
         this.cartCloseButton.addEventListener('click', this.close.bind(this));
+    }
+
+    setRemoveFromCartCartListener(callback) {
+        this.listContainer.addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {
+                const good_id = event.target.dataset.id;
+                callback(good_id);
+            }
+        })
     }
 
     open() {
@@ -201,7 +242,11 @@ class CartRenderer {
     render(list) {
         this.listContainer.textContent = '';
         let stacksList = list.map((item) => {
-            return `<div><h3>${item.getGood().getTitle()} x${item.getCount()}</h3><p>${item.getGood().getPrice() * item.getCount()}</p></div>`
+            return `<div>
+                        <h3>${item.getGood().getTitle()} x${item.getCount()}</h3>
+                        <p>${item.getGood().getPrice() * item.getCount()}</p>
+                        <button data-id="${item.id}">Delete</button>
+                    </div>`
         }).join('');
         this.listContainer.insertAdjacentHTML('afterbegin', stacksList);
     }
@@ -212,20 +257,5 @@ const cart = new Cart();
 const showcase = new Showcase(cart);
 const cartButton = document.querySelector('.cart-button');
 cartButton.addEventListener('click', cart.open.bind(cart));
-
-const promise = showcase.fetchGoods();
-
-promise.then(() => {
-    showcase.addToCart(123);
-    showcase.addToCart(123);
-    showcase.addToCart(123);
-    showcase.addToCart(456);
-
-    cart.remove(123);
-
-
-    console.log(showcase, cart)
-});
-
-
-// Создать класс для отрисовки каточки товара на витрине, и класс отрисовки карточки товара в корзине, класс отрисовки корзины, и класс отрисовки витрины
+showcase.fetchGoods();
+cart.fetchGoods();
