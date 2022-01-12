@@ -102,7 +102,7 @@ class Cart {
     }
 
     remove(id) {
-        const idx = this.list.findIndex((stack) => stack.id == id);
+        const idx = this.list.findIndex((stack) => stack.getGoodId() === id);
         console.log(idx);
         if (idx >= 0) {
             fetch(`${API_URL}cart`, {
