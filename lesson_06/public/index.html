@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <link href="styles.css" rel="stylesheet" type="text/css">
+    <title>eShop</title>
+</head>
+<body>
+<div id="app">
+    <header>
+        <button v-on:click="onShowCart" id="cart-button" class="cart-button" type="button">Корзина</button>
+    </header>
+    <main>
+        <showcase :list="showcase" v-on:addtocart="onAddToCart"></showcase>
+        <cart v-if="is_cart_visible" :list="cart" v-on:cartclose="onShowCart" v-on:deletefromcart="onDeleteFromCart"></cart>
+    </main>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="card.js"></script>
+<script src="cart.js"></script>
+<script src="showcase.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
