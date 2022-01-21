@@ -13,12 +13,16 @@
       card,
     },
     name: 'showcase',
-    props: ['list'],
     methods: {
-      onAdd(id) {
-        this.$emit('addtocart', id);
+      onAdd(product) {
+        this.$store.dispatch('addToCart', product);
       }
-    }
+    },
+    computed: {
+      list() {
+        return this.$store.getters.getShowcase
+      }
+    },
   }
 </script>
 

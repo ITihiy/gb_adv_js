@@ -12,7 +12,7 @@
     props: ['good', 'action'],
     methods: {
       onClick() {
-        this.$emit('cardaction', this.good.id);
+        this.$emit('cardaction', this.good);
       }
     }
   }

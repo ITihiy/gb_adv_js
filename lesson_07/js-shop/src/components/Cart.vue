@@ -1,66 +1,34 @@
 <template>
-    <div id="cart-window" class="cart-window">
-        <span class="cart-close-btn" v-on:click="onClick">&times;</span>
-        <div class="cart-content">
-            <card v-for="item of list" :good="item" :key="item.id" v-bind:action="'Удалить'"
-                  v-on:cardaction="onDelete"></card>
-        </div>
+    <div class="goods-list">
+        <card v-for="item of list" :good="item" v-bind:action="'Удалить'" v-bind:key="item.id"
+              v-on:cardaction="onRemove"></card>
     </div>
 </template>
 
 <script>
-  import card from './Card'
+  import card from "./Card";
 
   export default {
     components: {
       card,
     },
-    name: 'cart',
-    props: ['list'],
+    name: 'cartlist',
     methods: {
-      onClick() {
-        this.$emit('cartclose');
-      },
-      onDelete(id) {
-        this.$emit('deletefromcart', id);
+      onRemove(product) {
+        this.$store.dispatch('removeFromCart', product);
       }
-    }
+    },
+    computed: {
+      list() {
+        return this.$store.getters.getCart
+      }
+    },
   }
 </script>
 
-<style lang="css" scoped>
-    .cart-window {
-        position: fixed;
-        z-index: 1;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgb(0, 0, 0);
-        background-color: rgba(0, 0, 0, 0.4);
-    }
-
-    /* Modal Content/Box */
-    .cart-content {
-        background-color: #fefefe;
-        margin: 15% auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
-    }
-
-    .cart-close-btn {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-    }
-
-    .cart-close-btn:hover,
-    .cart-close-btn:focus {
-        color: black;
-        text-decoration: none;
-        cursor: pointer;
+<style lang="css">
+    .goods-list {
+        display: flex;
+        margin: 20px;
     }
 </style>
